@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: force-lens
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && cd cf_profile_analyzer && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "cd cf_profile_analyzer && gunicorn cf_profile_analyzer.wsgi:application --log-file -"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: cf_profile_analyzer.settings
