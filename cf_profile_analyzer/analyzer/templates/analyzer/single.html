@@ -1,0 +1,105 @@
+{% extends 'analyzer/base.html' %}
+{% block title_block %}Codeforces Profile Analyzer{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-sm-1"></div>
+
+  <div class="col-sm-10">
+    {% for message in messages %}
+    <div class="alert alert-danger fade show text-center" role="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+
+    {% if data %}
+    <center>
+      <div class="image mt-3">
+        <img class="profile-pic" src="{{ data.titlePhoto }}" alt="">
+      </div>
+
+
+      <div class="info-space mt-3">
+        <p class="handle"><a href="https://codeforces.com/profile/{{data.handle}}" style="color: {{ data.curColor }}">{{ data.handle }}</a><a class="tab" style="color: {{ data.curColor }}">{{ data.rating }}</a></p>
+        <p class="rank mt-4" style="color: {{ data.curColor }}">{{ data.rank|title }}</p>
+        <hr class="style-seperate my-4" style="background-color: {{ data.curColor }}">
+        <p>Min Rating:<span style="color: {{ contest_info.minColor }}" class="tab">{{ contest_info.minRating }}</span></p>
+        <p>Max Rating:<span style="color: {{ data.maxColor }}" class="tab">{{ data.maxRating }}</span></p>
+        <hr class="seperate my-4">
+        <p>Max Rank:<span class="tab">{{ contest_info.maxStanding }}</span></p>
+        <p>Min Rank:<span class="tab">{{ contest_info.minStanding }}</span></p>
+        <hr class="seperate my-4">
+        <p>Total Submission:<span class="tab">{{ submission_info.totalSub }}</span></p>
+        <p>Successful Submission:<span class="tab">{{ submission_info.successSub }}</span></p>
+        <p>Failed Submission:<span class="tab">{{ submission_info.failedSub }}</span></p>
+        <p>Ratio:<span class="tab text-success">{{ submission_info.successRatio }}</span> : <span class="text-danger">{{ submission_info.failedRatio }}</span></p>
+      </div>
+
+      <hr class="seperate">
+
+      <div class="solved-index">
+        <h3>Top solved indexs</h3>
+        <table class="table table-hover table-striped text-center">
+          <thead class="bg-dark text-light">
+            <tr>
+              <th scope="col">Index</th>
+              <th scope="col">Solved</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for index,count in submission_info.topSuccessIndex.items %}
+            <tr>
+              <td>{{index}}</td>
+              <td>{{count}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="seperate mt-5">
+
+      <div class="solved-tags">
+        <h3>Top solved tags</h3>
+        <table class="table table-striped text-center">
+          <thead class="bg-dark text-light">
+            <tr>
+              <th scope="col">Tag</th>
+              <th scope="col">Solved</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for tag,count in submission_info.topTags.items %}
+            <tr>
+              <td>{{tag|title}}</td>
+              <td>{{count}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </center>
+
+
+
+    {% else %}
+    <div class="jumbotron mt-3">
+      <center>
+        <form class="w-75" method="POST">
+          {% csrf_token %}
+          <input type="text" class="form-control mr-sm-2 input-form" action="/" name="handle" placeholder="Codeforces Handle (Ex: tourist)" required>
+          <button class="btn btn-outline-success mt-3" type="submit">Go, Fetch!</button>
+        </form>
+    </div>
+    <br><br><br><br><br>
+    {% endif %}
+  </div>
+
+  <div class="col-sm-1"></div>
+</div>
+
+
+{% endblock %}

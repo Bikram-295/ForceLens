@@ -1,0 +1,12 @@
+
+venv/
+
+.idea/
+
+cf_profile_analyzer/db.sqlite3
+
+cf_profile_analyzer/analyzer/__pycache__/
+
+cf_profile_analyzer/analyzer/migrations/
+
+cf_profile_analyzer/cf_profile_analyzer/__pycache__/

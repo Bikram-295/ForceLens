@@ -1,0 +1,64 @@
+body {
+  font-family: 'Do Hyeon', sans-serif;
+  min-width: 400px;
+}
+
+.big-brand{
+  font-size: 60px;
+  font-family: 'Rubik Mono One', sans-serif;
+}
+
+.input-form {
+  height: 60px;
+  font-size: 18px;
+}
+
+.profile-pic {
+  border: 2px solid black;
+  border-radius: 50%;
+  height: 15vh;
+  width: 15vh;
+}
+
+.info-space {
+  margin-bottom: 10%;
+  line-height: 15px;
+  font-size: 25px;
+}
+
+.handle {
+  font-size: 40px;
+  font-family: cursive;
+  margin-top: 5%;
+  font-weight: bold;
+}
+
+.rank {
+  font-size: 40px;
+  font-family: cursive;
+  margin-top: 5%;
+  font-weight: bold;
+}
+
+.tab {
+  display: inline-block;
+  margin-left: 40px;
+  font-weight: bold;
+}
+
+.style-seperate {
+  height: 3px;
+  width: 50px;
+  border-radius: 30px
+}
+
+.seperate {
+  height: 3px;
+  width: 250px;
+  background-color: #bfc3c9;
+  border-radius: 30px
+}
+
+.comparison-table {
+  font-size: 21px;
+}
