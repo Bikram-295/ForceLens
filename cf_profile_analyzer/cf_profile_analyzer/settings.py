@@ -27,7 +27,7 @@ SECRET_KEY = '1+g%(exxnb#pwmaum-8ld*ih-mw_4=wihs-=4%2qnv&_2&+bi9'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['cfpa.pythonanywhere.com', '127.0.0.1', '.vercel.app', 'localhost']
+ALLOWED_HOSTS = ['cfpa.pythonanywhere.com', '127.0.0.1', '.vercel.app', 'localhost', '.railway.app', '.onrender.com', '*']
 
 
 # Application definition
