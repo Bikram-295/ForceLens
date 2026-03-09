@@ -1,89 +1,147 @@
 <!DOCTYPE html>
 {% load static %}
-<html>
+<html lang="en" class="dark">
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{%block title_block%}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title_block %}ForceLens{% endblock %}</title>
 
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Rubik+Mono+One&display=swap" rel="stylesheet">
-  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="{% static 'css/master.css' %}">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            DEFAULT: '#0f172a', /* slate-900 */
+                            card: '#1e293b',   /* slate-800 */
+                            border: '#334155', /* slate-700 */
+                            lighter: '#475569' /* slate-600 */
+                        },
+                        primary: {
+                            DEFAULT: '#8b5cf6', /* violet-500 */
+                            hover: '#7c3aed',   /* violet-600 */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147442131-1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'UA-147442131-1');
-  </script>
-
-  
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-147442131-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-147442131-1');
+    </script>
+    
+    <style>
+        /* Custom Glassmorphism Utilities */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .bg-gradient-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 1) 0%, rgba(30, 27, 75, 1) 100%);
+        }
+        
+        /* Smooth transitions */
+        .transition-all-smooth {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-1"></div>
 
-      <div class="col-sm-10">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light border rounded-bottom">
-          <a class="navbar-brand big-brand" href="{% url 'single' %}" data-toggle="tooltip" data-placement="top" title="Codeforces Profile Analyzer">
-            <span class="text-dark">C</span><span class="text-primary">F</span><span class="text-danger">P</span><span class="text-warning">A</span>
-          </a>
+<body class="bg-dark text-slate-200 font-sans min-h-screen flex flex-col bg-gradient-hero selection:bg-primary selection:text-white">
 
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 glass-card border-b border-dark-border py-4">
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a href="{% url 'single' %}" class="flex items-center gap-2 group" title="Codeforces Profile Analyzer">
+                <div class="flex font-bold text-2xl tracking-tighter">
+                    <span class="text-white group-hover:text-primary transition-colors">Force</span><span class="text-primary group-hover:text-white transition-colors">Lens</span>
+                </div>
+            </a>
 
-          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav navbar-center" style="font-size:28px">
-              <a class="nav-item nav-link active" href="{% url 'dual' %}">Dual Profile</a>
+            <!-- Links -->
+            <div class="hidden md:flex items-center gap-8 font-medium">
+                <a href="{% url 'single' %}" class="text-slate-300 hover:text-white transition-colors">Single Profile</a>
+                <a href="{% url 'dual' %}" class="text-slate-300 hover:text-white transition-colors">Compare Profiles</a>
             </div>
-          </div>
-        </nav>
-        <div class="fork float-right">
-          <a href="https://github.com/Bikram-295/ForceLens" style="font-size: 15px; color: black;"><i class="fa fa-code-fork" aria-hidden="true"> Fork this repo</i></a>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-4">
+                <a href="https://github.com/Bikram-295/ForceLens" target="_blank" class="text-slate-400 hover:text-white bg-dark-card hover:bg-dark-border px-4 py-2 rounded-full border border-dark-border transition-all-smooth flex items-center gap-2 text-sm">
+                    <i class="fa fa-github text-lg"></i>
+                    <span class="hidden sm:inline">Star on GitHub</span>
+                </a>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
         </div>
-      </div>
+        
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-dark-card border-b border-dark-border py-2 px-4 flex flex-col gap-2 shadow-xl">
+            <a href="{% url 'single' %}" class="text-base text-slate-300 hover:text-white hover:bg-dark-border px-4 py-2 rounded-lg transition-colors">Single Profile</a>
+            <a href="{% url 'dual' %}" class="text-base text-slate-300 hover:text-white hover:bg-dark-border px-4 py-2 rounded-lg transition-colors">Compare Profiles</a>
+        </div>
+    </nav>
 
-      <div class="col-sm-1"></div>
-    </div>
-  </div>
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 md:px-6 py-8">
+        {% block content %}
+        {% endblock %}
+    </main>
 
+    <!-- Footer -->
+    <footer class="glass-card border-t border-dark-border py-8 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-slate-400 text-sm mb-4">
+                Designed for Codeforces developers. Data provided by <a href="https://codeforces.com/apiHelp" target="_blank" class="text-primary hover:underline">Codeforces API</a>.
+            </p>
+            <div class="flex justify-center gap-4">
+                <a href="https://github.com/Bikram-295" target="_blank" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa fa-github text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
 
-  <div class="container">
-    {% block content %}
-
-    {% endblock %}
-  </div>
-
-
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-1"></div>
-
-      <div class="col-sm-10 text-dark">
-        <footer class="text-center bg-light p-3 border rounded">
-          
-          <br>
-          <a href="https://github.com/Bikram-295"><i id="social-fb" class="fa fa-github-square fa-2x" aria-hidden="true"></i></a>
-
-      </div>
-      </footer>
-
-    <div class="col-sm-1"></div>
-
-  </div>
-  </div>
-
-  <!-- JS, Popper.js, and jQuery -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
 </body>
-
 </html>

@@ -1,105 +1,349 @@
 {% extends 'analyzer/base.html' %}
-{% block title_block %}Codeforces Profile Analyzer{% endblock %}
+{% block title_block %}Profile Analyzer | ForceLens{% endblock %}
 
 {% block content %}
 
-<div class="row">
-  <div class="col-sm-1"></div>
+<!-- Alerts -->
+{% for message in messages %}
+<div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-500 text-center glass-card animate-pulse">
+    {{ message }}
+</div>
+{% endfor %}
 
-  <div class="col-sm-10">
-    {% for message in messages %}
-    <div class="alert alert-danger fade show text-center" role="alert">
-      {{ message }}
+{% if data %}
+<!-- Dashboard View -->
+<div class="flex flex-col gap-6 animate-[fadeIn_0.5s_ease-out]">
+    
+    <!-- Top Row: Profile & Key Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Profile Card -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col items-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <img src="{{ data.titlePhoto }}" alt="{{ data.handle }} avatar" class="w-32 h-32 rounded-full border-4 border-dark-card shadow-xl z-10 group-hover:scale-105 transition-transform duration-300">
+            
+            <div class="mt-4 text-center z-10 w-full">
+                <h1 class="text-3xl font-bold tracking-tight">
+                    <a href="https://codeforces.com/profile/{{data.handle}}" target="_blank" class="hover:underline" style="color: {{ data.curColor }}">{{ data.handle }}</a>
+                </h1>
+                <p class="text-lg mt-1 font-medium capitalize" style="color: {{ data.curColor }}">{{ data.rank }}</p>
+                
+                <div class="w-full h-px bg-dark-border my-4"></div>
+                
+                <div class="flex justify-between items-center px-4 w-full">
+                    <span class="text-slate-400">Current Rating</span>
+                    <span class="text-2xl font-bold" style="color: {{ data.curColor }}">{{ data.rating }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Max Rating -->
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-center hover:-translate-y-1 transition-transform duration-300">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
+                        <i class="fa fa-line-chart"></i>
+                    </div>
+                    <h3 class="text-slate-400 font-medium">Max Rating</h3>
+                </div>
+                <div class="flex items-end gap-3 mt-auto">
+                    <span class="text-4xl font-bold" style="color: {{ data.maxColor }}">{{ data.maxRating }}</span>
+                    <span class="text-sm text-slate-400 mb-1 capitalize">{{ contest_info.maxStanding }} Rank</span>
+                </div>
+            </div>
+
+            <!-- Min Rating -->
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-center hover:-translate-y-1 transition-transform duration-300">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
+                        <i class="fa fa-area-chart"></i>
+                    </div>
+                    <h3 class="text-slate-400 font-medium">Min Rating</h3>
+                </div>
+                <div class="flex items-end gap-3 mt-auto">
+                    <span class="text-4xl font-bold" style="color: {{ contest_info.minColor }}">{{ contest_info.minRating }}</span>
+                    <span class="text-sm text-slate-400 mb-1 capitalize">{{ contest_info.minStanding }} Rank</span>
+                </div>
+            </div>
+
+            <!-- Submissions -->
+            <div class="glass-card rounded-2xl p-6 sm:col-span-2 flex flex-col sm:flex-row items-center justify-between gap-6 hover:-translate-y-1 transition-transform duration-300">
+                <div class="w-full sm:w-1/3">
+                    <h3 class="text-slate-400 font-medium mb-1">Total Submissions</h3>
+                    <span class="text-4xl font-bold text-white">{{ submission_info.totalSub }}</span>
+                </div>
+                
+                <div class="w-full sm:w-2/3 grid grid-cols-2 gap-4">
+                    <div class="bg-dark-card/50 rounded-xl p-3 border border-dark-border">
+                        <div class="text-sm text-emerald-400 mb-1 flex items-center gap-2"><i class="fa fa-check-circle"></i> Success</div>
+                        <div class="text-2xl font-bold">{{ submission_info.successSub }}</div>
+                        <div class="text-xs text-slate-400 mt-1">{{ submission_info.successRatio }}</div>
+                    </div>
+                    <div class="bg-dark-card/50 rounded-xl p-3 border border-dark-border">
+                        <div class="text-sm text-red-400 mb-1 flex items-center gap-2"><i class="fa fa-times-circle"></i> Failed</div>
+                        <div class="text-2xl font-bold">{{ submission_info.failedSub }}</div>
+                        <div class="text-xs text-slate-400 mt-1">{{ submission_info.failedRatio }}</div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
     </div>
-    {% endfor %}
 
-    {% if data %}
-    <center>
-      <div class="image mt-3">
-        <img class="profile-pic" src="{{ data.titlePhoto }}" alt="">
-      </div>
-
-
-      <div class="info-space mt-3">
-        <p class="handle"><a href="https://codeforces.com/profile/{{data.handle}}" style="color: {{ data.curColor }}">{{ data.handle }}</a><a class="tab" style="color: {{ data.curColor }}">{{ data.rating }}</a></p>
-        <p class="rank mt-4" style="color: {{ data.curColor }}">{{ data.rank|title }}</p>
-        <hr class="style-seperate my-4" style="background-color: {{ data.curColor }}">
-        <p>Min Rating:<span style="color: {{ contest_info.minColor }}" class="tab">{{ contest_info.minRating }}</span></p>
-        <p>Max Rating:<span style="color: {{ data.maxColor }}" class="tab">{{ data.maxRating }}</span></p>
-        <hr class="seperate my-4">
-        <p>Max Rank:<span class="tab">{{ contest_info.maxStanding }}</span></p>
-        <p>Min Rank:<span class="tab">{{ contest_info.minStanding }}</span></p>
-        <hr class="seperate my-4">
-        <p>Total Submission:<span class="tab">{{ submission_info.totalSub }}</span></p>
-        <p>Successful Submission:<span class="tab">{{ submission_info.successSub }}</span></p>
-        <p>Failed Submission:<span class="tab">{{ submission_info.failedSub }}</span></p>
-        <p>Ratio:<span class="tab text-success">{{ submission_info.successRatio }}</span> : <span class="text-danger">{{ submission_info.failedRatio }}</span></p>
-      </div>
-
-      <hr class="seperate">
-
-      <div class="solved-index">
-        <h3>Top solved indexs</h3>
-        <table class="table table-hover table-striped text-center">
-          <thead class="bg-dark text-light">
-            <tr>
-              <th scope="col">Index</th>
-              <th scope="col">Solved</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for index,count in submission_info.topSuccessIndex.items %}
-            <tr>
-              <td>{{index}}</td>
-              <td>{{count}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <hr class="seperate mt-5">
-
-      <div class="solved-tags">
-        <h3>Top solved tags</h3>
-        <table class="table table-striped text-center">
-          <thead class="bg-dark text-light">
-            <tr>
-              <th scope="col">Tag</th>
-              <th scope="col">Solved</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for tag,count in submission_info.topTags.items %}
-            <tr>
-              <td>{{tag|title}}</td>
-              <td>{{count}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </center>
-
-
-
-    {% else %}
-    <div class="jumbotron mt-3">
-      <center>
-        <form class="w-75" method="POST">
-          {% csrf_token %}
-          <input type="text" class="form-control mr-sm-2 input-form" action="/" name="handle" placeholder="Codeforces Handle (Ex: tourist)" required>
-          <button class="btn btn-outline-success mt-3" type="submit">Go, Fetch!</button>
-        </form>
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Submissions by Tag Chart -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-pie-chart text-primary"></i> Top Solved Tags
+            </h3>
+            <div class="relative w-full h-80 flex-grow">
+                <canvas id="tagsChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Ratings by Index Chart -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-bar-chart text-primary"></i> Top Solved Indexes
+            </h3>
+            <div class="relative w-full h-80 flex-grow">
+                <canvas id="indexChart"></canvas>
+            </div>
+        </div>
     </div>
-    <br><br><br><br><br>
-    {% endif %}
-  </div>
 
-  <div class="col-sm-1"></div>
+    <!-- Tables Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Index Table -->
+        <div class="glass-card rounded-2xl overflow-hidden flex flex-col max-h-96">
+            <div class="p-4 border-b border-dark-border bg-dark-card/50">
+                <h3 class="font-bold text-white">Index Distribution</h3>
+            </div>
+            <div class="overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-dark text-slate-400 sticky top-0 text-sm opacity-95">
+                        <tr>
+                            <th class="p-4 font-medium">Problem Index</th>
+                            <th class="p-4 font-medium text-right">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-dark-border">
+                        {% for index,count in submission_info.topSuccessIndex.items %}
+                        <tr class="hover:bg-dark-border/50 transition-colors">
+                            <td class="p-4 font-medium text-white">{{index}}</td>
+                            <td class="p-4 text-right text-slate-300">{{count}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tags Table -->
+        <div class="glass-card rounded-2xl overflow-hidden flex flex-col max-h-96">
+            <div class="p-4 border-b border-dark-border bg-dark-card/50">
+                <h3 class="font-bold text-white">Tag Distribution</h3>
+            </div>
+            <div class="overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-dark text-slate-400 sticky top-0 text-sm opacity-95">
+                        <tr>
+                            <th class="p-4 font-medium">Tag</th>
+                            <th class="p-4 font-medium text-right">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-dark-border">
+                        {% for tag,count in submission_info.topTags.items %}
+                        <tr class="hover:bg-dark-border/50 transition-colors">
+                            <td class="p-4 text-white capitalize">{{tag}}</td>
+                            <td class="p-4 text-right text-slate-300">{{count}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 
+<!-- Chart initialization scripts -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Chart defaults
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+        
+        // Data prep - Tags
+        const tagsData = {
+            labels: [
+                {% for tag,count in submission_info.topTags.items %}
+                "{{ tag|title }}"{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ].slice(0, 10), // Limit to top 10 for chart readability
+            data: [
+                {% for tag,count in submission_info.topTags.items %}
+                {{ count }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ].slice(0, 10)
+        };
 
+        if(tagsData.labels.length > 0) {
+            const ctxTags = document.getElementById('tagsChart').getContext('2d');
+            new Chart(ctxTags, {
+                type: 'doughnut',
+                data: {
+                    labels: tagsData.labels,
+                    datasets: [{
+                        data: tagsData.data,
+                        backgroundColor: [
+                            '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e',
+                            '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, padding: 15 } }
+                    },
+                    cutout: '70%',
+                    layout: { padding: 10 }
+                }
+            });
+        }
+
+        // Data prep - Index
+        const indexData = {
+            labels: [
+                {% for index,count in submission_info.topSuccessIndex.items %}
+                "{{ index }}"{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            data: [
+                {% for index,count in submission_info.topSuccessIndex.items %}
+                {{ count }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        };
+
+        if(indexData.labels.length > 0) {
+            const ctxIndex = document.getElementById('indexChart').getContext('2d');
+            new Chart(ctxIndex, {
+                type: 'bar',
+                data: {
+                    labels: indexData.labels,
+                    datasets: [{
+                        label: 'Problems Solved',
+                        data: indexData.data,
+                        backgroundColor: 'rgba(139, 92, 246, 0.5)',
+                        borderColor: '#8b5cf6',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(51, 65, 85, 0.5)' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    });
+</script>
+
+{% else %}
+<!-- Landing Page / Search View -->
+<div class="min-h-[70vh] flex flex-col items-center justify-center animate-[fadeIn_1s_ease-out]">
+    
+    <div class="text-center mb-10 max-w-2xl">
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-fuchsia-400">
+            Analyze Your Codeforces
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400">
+            Get beautiful insights, charts, and statistics for your competitive programming journey.
+        </p>
+    </div>
+
+    <div class="glass-card rounded-3xl p-8 w-full max-w-lg shadow-2xl relative overflow-hidden">
+        <!-- Glow effect -->
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-fuchsia-500/20 rounded-full blur-3xl"></div>
+        
+        <form method="POST" class="relative z-10 flex flex-col gap-4">
+            {% csrf_token %}
+            <div>
+                <label for="handle" class="block text-sm font-medium text-slate-300 mb-2">Codeforces Handle</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <input type="text" id="handle" name="handle" placeholder="e.g. tourist" required
+                        class="w-full bg-dark-card border border-dark-border text-white text-lg rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder-slate-600">
+                </div>
+            </div>
+            
+            <button type="submit" 
+                class="mt-2 w-full bg-primary hover:bg-primary-hover text-white font-bold text-lg py-4 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.6)] transform hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2">
+                Analyze Profile <i class="fa fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+    
+    <!-- Decorative Features -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl w-full px-4 text-center opacity-70">
+        <div>
+            <div class="text-primary text-2xl mb-2"><i class="fa fa-line-chart"></i></div>
+            <h4 class="font-bold text-slate-200">Rating History</h4>
+            <p class="text-sm text-slate-400 mt-1">Track your performance over time with beautiful charts.</p>
+        </div>
+        <div>
+            <div class="text-fuchsia-400 text-2xl mb-2"><i class="fa fa-pie-chart"></i></div>
+            <h4 class="font-bold text-slate-200">Problem Insights</h4>
+            <p class="text-sm text-slate-400 mt-1">See which topics and difficulties you excel at.</p>
+        </div>
+        <div>
+            <div class="text-emerald-400 text-2xl mb-2"><i class="fa fa-balance-scale"></i></div>
+            <h4 class="font-bold text-slate-200">Compare Profiles</h4>
+            <p class="text-sm text-slate-400 mt-1">Match up against friends and rivals directly.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Custom Scrollbar for tables */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(30, 41, 59, 1);
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(71, 85, 105, 1);
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 1);
+    }
+</style>
+
+{% endif %}
 {% endblock %}
