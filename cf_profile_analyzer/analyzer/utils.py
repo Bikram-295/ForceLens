@@ -134,6 +134,10 @@ def get_submission_info(handle):
         
         solved_problems = set()
         problem_ratings = {}
+        
+        # Radar Chart Core Categories
+        core_categories = ['math', 'greedy', 'dp', 'data structures', 'graphs', 'strings']
+        radar_data_dict = {cat: 0 for cat in core_categories}
 
         for submission in submissions:
             prob_id = f"{submission['problem'].get('contestId', '')}_{submission['problem'].get('name', '')}"
@@ -165,6 +169,11 @@ def get_submission_info(handle):
                             problem_ratings[rating] += 1
                         else:
                             problem_ratings[rating] = 1
+                            
+                    # Track Radar chart core categories
+                    for tag in tags:
+                        if tag in core_categories:
+                            radar_data_dict[tag] += 1
             else:
                 failedSubmission += 1
                 index = submission['problem']['index']
@@ -204,11 +213,16 @@ def get_submission_info(handle):
         rating_labels = sorted(problem_ratings.keys())
         rating_data = [problem_ratings[r] for r in rating_labels]
         
+        # Parse radar data
+        radar_labels = [cat.title() for cat in core_categories]
+        radar_data = [radar_data_dict[cat] for cat in core_categories]
+        
         data = {'totalSub': len(submissions), 'successSub': successfulSubmission, 'failedSub': failedSubmission,
                 'topTags': topTags, 'topSuccessIndex': topSuccessIndex, 'topFailedIndex': topFailedIndex,
                 'successRatio': successRatio, 'failedRatio': failedRatio,
                 'rating_labels': rating_labels, 'rating_data': rating_data,
                 'abandoned_labels': abandoned_labels, 'abandoned_data': abandoned_data,
+                'radar_labels': radar_labels, 'radar_data': radar_data,
                 'solved_problem_ids': list(solved_problem_ids)}
     except KeyError:
         pass

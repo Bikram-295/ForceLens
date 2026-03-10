@@ -127,7 +127,7 @@
     </div>
 
     <!-- Indexes Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <!-- Ratings by Index Chart -->
         <div class="glass-card rounded-2xl p-6 flex flex-col">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -135,6 +135,16 @@
             </h3>
             <div class="relative w-full h-80 flex-grow">
                 <canvas id="indexChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Radar Chart: Topic Proficiency -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-star text-primary"></i> Topic Proficiency
+            </h3>
+            <div class="relative w-full h-80 flex-grow">
+                <canvas id="radarChart"></canvas>
             </div>
         </div>
     </div>
@@ -507,6 +517,51 @@
                     },
                     plugins: { 
                         legend: { display: false } 
+                    }
+                }
+            });
+        }
+        // Data prep - Radar Chart
+        const radarLabels = {{ submission_info.radar_labels|safe }};
+        const radarData = {{ submission_info.radar_data|safe }};
+
+        if (radarLabels && radarLabels.length > 0) {
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: radarLabels,
+                    datasets: [{
+                        label: 'Problems Solved',
+                        data: radarData,
+                        fill: true,
+                        backgroundColor: 'rgba(6, 182, 212, 0.2)', // Cyan-500
+                        borderColor: '#06b6d4',
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#06b6d4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(51, 65, 85, 0.5)' }, // dark-border
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            pointLabels: {
+                                color: '#94a3b8', // slate-400
+                                font: { size: 12, family: 'Inter' }
+                            },
+                            ticks: {
+                                display: false, // Hide numeric values on the axes
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
                     }
                 }
             });
