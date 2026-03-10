@@ -1,4 +1,6 @@
 import requests
+import datetime
+import random
 
 
 def choose_color(rating):
@@ -63,11 +65,22 @@ def get_contest_info(handle):
 
     ratings = []
     standings = []
+    rating_history_labels = []
+    
     for contest in contests:
         ratings.append(contest['newRating'])
         standings.append(contest['rank'])
+        
+        # Convert timestamp to readable date string for the chart
+        if 'ratingUpdateTimeSeconds' in contest:
+            timestamp = contest['ratingUpdateTimeSeconds']
+            dt_object = datetime.datetime.fromtimestamp(timestamp)
+            date_str = dt_object.strftime("%b %Y") # e.g., "Jan 2023"
+            rating_history_labels.append(date_str)
+        else:
+            rating_history_labels.append("")
 
-    data = {'ratings': ratings}
+    data = {'ratings': ratings, 'rating_history_labels': rating_history_labels}
     if len(ratings)>0:
         data['minRating'] = min(ratings)
     else:
@@ -114,11 +127,23 @@ def get_submission_info(handle):
         favProgTag = {}
         successProblemIndex = {}
         failedProblemIndex = {}
+        
+        # New tracking variables for abandoned problems
+        solved_problem_ids = set() # Track IDs of problems solved
+        attempted_problem_tags = {} # problem_id -> list of tags
+        
+        solved_problems = set()
+        problem_ratings = {}
 
         for submission in submissions:
+            prob_id = f"{submission['problem'].get('contestId', '')}_{submission['problem'].get('name', '')}"
+            if 'tags' in submission['problem']:
+                attempted_problem_tags[prob_id] = submission['problem']['tags']
+                
             if submission['verdict'] == 'OK':
+                solved_problem_ids.add(prob_id)
                 successfulSubmission += 1
-                tags = submission['problem']['tags']
+                tags = submission['problem'].get('tags', [])
                 for tag in tags:
                     if tag not in favProgTag:
                         favProgTag[tag] = 1
@@ -130,6 +155,16 @@ def get_submission_info(handle):
                     successProblemIndex[index] += 1
                 else:
                     successProblemIndex[index] = 1
+                    
+                # Track difficulty distribution for unique solved problems
+                if prob_id not in solved_problems:
+                    solved_problems.add(prob_id)
+                    rating = submission['problem'].get('rating')
+                    if rating:
+                        if rating in problem_ratings:
+                            problem_ratings[rating] += 1
+                        else:
+                            problem_ratings[rating] = 1
             else:
                 failedSubmission += 1
                 index = submission['problem']['index']
@@ -137,6 +172,22 @@ def get_submission_info(handle):
                     failedProblemIndex[index] += 1
                 else:
                     failedProblemIndex[index] = 1
+                    
+        # Calculate abandoned problems by tag
+        abandoned_tags_counts = {}
+        for prob_id, tags in attempted_problem_tags.items():
+            if prob_id not in solved_problem_ids:
+                # This problem was attempted but never OK'd
+                for tag in tags:
+                    if tag in abandoned_tags_counts:
+                        abandoned_tags_counts[tag] += 1
+                    else:
+                        abandoned_tags_counts[tag] = 1
+        
+        # Sort and get top 10 abandoned tags
+        sorted_abandoned = sorted(abandoned_tags_counts.items(), key=lambda item: item[1], reverse=True)[:10]
+        abandoned_labels = [item[0] for item in sorted_abandoned]
+        abandoned_data = [item[1] for item in sorted_abandoned]
 
         topTags = get_top_five(favProgTag)
         topSuccessIndex = get_top_five(successProblemIndex)
@@ -148,10 +199,65 @@ def get_submission_info(handle):
         else:
             successRatio = "--"
             failedRatio = "--"
+            
+        # Parse rating distribution data
+        rating_labels = sorted(problem_ratings.keys())
+        rating_data = [problem_ratings[r] for r in rating_labels]
+        
         data = {'totalSub': len(submissions), 'successSub': successfulSubmission, 'failedSub': failedSubmission,
                 'topTags': topTags, 'topSuccessIndex': topSuccessIndex, 'topFailedIndex': topFailedIndex,
-                'successRatio': successRatio, 'failedRatio': failedRatio}
+                'successRatio': successRatio, 'failedRatio': failedRatio,
+                'rating_labels': rating_labels, 'rating_data': rating_data,
+                'abandoned_labels': abandoned_labels, 'abandoned_data': abandoned_data,
+                'solved_problem_ids': list(solved_problem_ids)}
     except KeyError:
         pass
 
     return data
+
+
+def get_recommendations(user_rating, abandoned_labels, solved_problem_ids):
+    # Set target rating
+    if not isinstance(user_rating, int) or user_rating < 800:
+        target_rating = 800
+    else:
+        # Suggest problems slightly harder than their current rating (round down to nearest 100, then add 100)
+        target_rating = (user_rating // 100) * 100 + 100
+
+    link = "https://codeforces.com/api/problemset.problems"
+    
+    try:
+        response = requests.get(link).json()
+        if response['status'] != 'OK':
+            return []
+            
+        all_problems = response['result']['problems']
+        recommended = []
+        
+        # Consider top 3 abandoned tags for recommendations
+        target_tags = set(abandoned_labels[:3]) if abandoned_labels else set()
+        
+        for p in all_problems:
+            prob_id = f"{p.get('contestId', '')}_{p.get('name', '')}"
+            
+            # Skip if already solved
+            if prob_id in solved_problem_ids:
+                continue
+                
+            p_rating = p.get('rating')
+            # Check rating constraints: between target_rating and target_rating + 200
+            if p_rating and target_rating <= p_rating <= target_rating + 200:
+                p_tags = set(p.get('tags', []))
+                
+                # Check tag constraints (must have at least one weak tag, or if no weak tags exist, just recommend based on rating)
+                if not target_tags or p_tags.intersection(target_tags):
+                    p['link'] = f"https://codeforces.com/problemset/problem/{p.get('contestId', '')}/{p.get('index', '')}"
+                    recommended.append(p)
+                    
+        # Randomly select up to 5 problems
+        if len(recommended) > 5:
+            return random.sample(recommended, 5)
+        return recommended
+
+    except Exception:
+        return []

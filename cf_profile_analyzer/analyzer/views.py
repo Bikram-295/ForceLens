@@ -12,6 +12,8 @@ def single(request):
     data = ''
     contest_info = ''
     submission_info = ''
+    recommendations = []
+    
     if request.method == 'POST':
         handle = request.POST['handle'].lower()
 
@@ -26,8 +28,14 @@ def single(request):
         else:
             contest_info = get_contest_info(handle)
             submission_info = get_submission_info(handle)
+            
+            # Fetch recommendations based on current rating and weak tags
+            user_rating = data.get('rating', 800)
+            abandoned_tags = submission_info.get('abandoned_labels', []) if submission_info else []
+            solved_ids = submission_info.get('solved_problem_ids', []) if submission_info else []
+            recommendations = get_recommendations(user_rating, abandoned_tags, solved_ids)
 
-    context = {'data': data, 'contest_info': contest_info, 'submission_info': submission_info}
+    context = {'data': data, 'contest_info': contest_info, 'submission_info': submission_info, 'recommendations': recommendations}
 
     return render(request, 'analyzer/single.html', context=context)
 

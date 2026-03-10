@@ -91,6 +91,16 @@
             </div>
             
         </div>
+    <!-- Rating History Row -->
+    <div class="grid grid-cols-1 gap-6 mt-6 mb-6">
+        <div class="glass-card rounded-2xl p-6 flex flex-col">
+            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-line-chart text-fuchsia-400"></i> Rating History
+            </h3>
+            <div class="relative w-full h-80 flex-grow">
+                <canvas id="ratingHistoryChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <!-- Charts Row -->
@@ -105,10 +115,23 @@
             </div>
         </div>
         
+        <!-- Difficulty Distribution Chart -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col lg:col-span-1">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-bar-chart text-primary"></i> Difficulty Distribution
+            </h3>
+            <div class="relative w-full h-80 flex-grow">
+                <canvas id="difficultyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexes Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
         <!-- Ratings by Index Chart -->
         <div class="glass-card rounded-2xl p-6 flex flex-col">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <i class="fa fa-bar-chart text-primary"></i> Top Solved Indexes
+                <i class="fa fa-list-ol text-primary"></i> Top Solved Indexes
             </h3>
             <div class="relative w-full h-80 flex-grow">
                 <canvas id="indexChart"></canvas>
@@ -116,8 +139,21 @@
         </div>
     </div>
 
+    <!-- Abandoned Problems Row -->
+    <div class="grid grid-cols-1 gap-6 mt-6">
+        <div class="glass-card rounded-2xl p-6 flex flex-col">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-exclamation-triangle text-orange-500"></i> Abandoned Problems
+            </h3>
+            <p class="text-sm text-slate-400 mb-4">Topics where you have attempted problems but haven't successfully solved them yet.</p>
+            <div class="relative w-full h-96 flex-grow">
+                <canvas id="abandonedChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Tables Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <!-- Index Table -->
         <div class="glass-card rounded-2xl overflow-hidden flex flex-col max-h-96">
             <div class="p-4 border-b border-dark-border bg-dark-card/50">
@@ -168,6 +204,48 @@
             </div>
         </div>
     </div>
+    </div>
+
+    <!-- Recommended Practice Row -->
+    {% if recommendations %}
+    <div class="grid grid-cols-1 gap-6 mt-6 mb-8">
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa fa-lightbulb-o text-yellow-400"></i> Recommended Practice
+            </h3>
+            <p class="text-sm text-slate-400 mb-6">Based on your current rating and abandoned topics, here are some selected Codeforces problems to help you improve:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for prob in recommendations %}
+                <a href="{{ prob.link }}" target="_blank" rel="noopener noreferrer" class="block transition-transform hover:-translate-y-1">
+                    <div class="bg-dark-card/60 rounded-xl p-5 border border-dark-border hover:border-violet-500/50 h-full flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-white text-lg leading-tight">{{ prob.name }}</h4>
+                                {% if prob.rating %}
+                                <span class="px-2 py-1 rounded text-xs font-bold bg-slate-800 text-slate-300 whitespace-nowrap ml-2">
+                                    <i class="fa fa-star text-yellow-500 mr-1"></i>{{ prob.rating }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                {% for tag in prob.tags %}
+                                <span class="text-xs px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                    {{ tag }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm font-medium text-violet-400">
+                            Solve Problem <i class="fa fa-arrow-right ml-2 opacity-70"></i>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
 </div>
 
@@ -177,6 +255,73 @@
         // Chart defaults
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = 'Inter';
+        
+        // Data prep - Rating History
+        const historyLabels = {{ contest_info.rating_history_labels|safe }};
+        const historyData = {{ contest_info.ratings|safe }};
+        
+        if (historyLabels && historyLabels.length > 0) {
+            const ctxHistory = document.getElementById('ratingHistoryChart').getContext('2d');
+            
+            // Create gradient for the line chart fill
+            const gradient = ctxHistory.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(192, 38, 211, 0.4)'); // Fuchsia top
+            gradient.addColorStop(1, 'rgba(192, 38, 211, 0.0)'); // Transparent bottom
+
+            new Chart(ctxHistory, {
+                type: 'line',
+                data: {
+                    labels: historyLabels,
+                    datasets: [{
+                        label: 'Rating',
+                        data: historyData,
+                        borderColor: '#c026d3', // Fuchsia border
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#c026d3',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.3 // Smooth curves
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: { 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            title: { display: true, text: 'Rating', color: '#64748b' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: {
+                                maxTicksLimit: 12 // Prevent overcrowding of dates on X axis
+                            }
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label; // Date
+                                },
+                                label: function(context) {
+                                    return ' Rating: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
         
         // Data prep - Tags
         const tagsData = {
@@ -258,6 +403,111 @@
                         x: { grid: { display: false } }
                     },
                     plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // Data prep - Difficulty Distribution
+        const ratingLabels = {{ submission_info.rating_labels|safe }};
+        const ratingData = {{ submission_info.rating_data|safe }};
+        
+        // Function to determine color based on CF rating
+        function getRatingColor(rating) {
+            if (rating < 1200) return '#808080'; // Gray
+            if (rating < 1400) return '#008000'; // Green
+            if (rating < 1600) return '#03a89e'; // Cyan
+            if (rating < 1900) return '#0000ff'; // Blue
+            if (rating < 2100) return '#aa00aa'; // Violet
+            if (rating < 2300) return '#ff8c00'; // Orange
+            if (rating < 2400) return '#ff8c00'; // Orange
+            return '#ff0000'; // Red
+        }
+        
+        if (ratingLabels && ratingLabels.length > 0) {
+            const backgroundColors = ratingLabels.map(r => getRatingColor(r) + '80'); // 50% opacity
+            const borderColors = ratingLabels.map(r => getRatingColor(r));
+            
+            const ctxDiff = document.getElementById('difficultyChart').getContext('2d');
+            new Chart(ctxDiff, {
+                type: 'bar',
+                data: {
+                    labels: ratingLabels,
+                    datasets: [{
+                        label: 'Problems Solved',
+                        data: ratingData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            title: { display: true, text: 'Count', color: '#64748b' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            title: { display: true, text: 'Rating', color: '#64748b' }
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Rating: ' + context[0].label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Data prep - Abandoned Problems
+        const abandonedLabels = {{ submission_info.abandoned_labels|safe }};
+        const abandonedData = {{ submission_info.abandoned_data|safe }};
+        
+        if (abandonedLabels && abandonedLabels.length > 0) {
+            const ctxAbandoned = document.getElementById('abandonedChart').getContext('2d');
+            new Chart(ctxAbandoned, {
+                type: 'bar',
+                data: {
+                    labels: abandonedLabels,
+                    datasets: [{
+                        label: 'Unsolved Attempts',
+                        data: abandonedData,
+                        backgroundColor: 'rgba(249, 115, 22, 0.5)', // Orange
+                        borderColor: '#f97316',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar chart
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            title: { display: true, text: 'Number of Abandoned Problems', color: '#64748b' }
+                        },
+                        y: { 
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false } 
+                    }
                 }
             });
         }
